@@ -1,0 +1,55 @@
+image: golang:1.11
+
+variables:
+  BIN_NAME: rss-godler
+  ARTIFACTS_DIR: binaries
+  GO_PROJECT: gitlab.com/engineerwolf/rss-godler
+
+stages:
+  - test
+  - build
+
+
+before_script:
+  - mkdir -p ${GOPATH}/src/${GO_PROJECT}
+  - mkdir -p ${CI_PROJECT_DIR}/${ARTIFACTS_DIR}
+  - go get -u github.com/golang/dep/cmd/dep
+  - cp -r ${CI_PROJECT_DIR}/* ${GOPATH}/src/${GO_PROJECT}/
+  - cd ${GOPATH}/src/${GO_PROJECT}
+
+test-rss-godler:
+  stage: test
+  script:
+    - dep ensure
+    - go test -v -cover ./...
+  except:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /skip-test/
+
+
+build-rss-godler:linux:
+  stage: build
+  script:
+    - dep ensure
+    - env GOOS=linux GOARCH=amd64 go build -o ${CI_PROJECT_DIR}/${ARTIFACTS_DIR}/${BIN_NAME} -ldflags "-s -w" . 
+  artifacts:
+    paths:
+      - ${ARTIFACTS_DIR}
+
+build-rss-godler:osx:
+  stage: build
+  script:
+    - dep ensure
+    - env GOOS=darwin GOARCH=amd64 go build -o ${CI_PROJECT_DIR}/${ARTIFACTS_DIR}/${BIN_NAME}_darwin -ldflags "-s -w" . 
+  artifacts:
+    paths:
+      - ${ARTIFACTS_DIR}
+
+build-rss-godler:windows:
+  stage: build
+  script:
+    - dep ensure
+    - go build -o ${CI_PROJECT_DIR}/${ARTIFACTS_DIR}/${BIN_NAME}.exe -ldflags "-s -w" .
+  artifacts:
+    paths:
+      - ${ARTIFACTS_DIR}
