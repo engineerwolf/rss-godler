@@ -16,7 +16,7 @@ before_script:
   - go get -u github.com/golang/dep/cmd/dep
   - cp -r ${CI_PROJECT_DIR}/* ${GOPATH}/src/${GO_PROJECT}/
   - cd ${GOPATH}/src/${GO_PROJECT}
-  - export MAJOR_VERSION=$(shell git describe --always --long --dirty)
+  - export MAJOR_VERSION=$(shell git describe --tags)
 
 test-rss-godler:
   stage: test
