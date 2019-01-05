@@ -31,7 +31,7 @@ build-rss-godler:linux:
   stage: build
   script:
     - dep ensure
-    - env GOOS=linux GOARCH=amd64 go build -o ${CI_PROJECT_DIR}/${ARTIFACTS_DIR}/${BIN_NAME} -ldflags "-s -w" . 
+    - env GOOS=linux GOARCH=amd64 go build -tags netgo -a -v -ldflags "-s -w" -o ${CI_PROJECT_DIR}/${ARTIFACTS_DIR}/${BIN_NAME} . 
   artifacts:
     paths:
       - ${ARTIFACTS_DIR}
@@ -40,7 +40,7 @@ build-rss-godler:osx:
   stage: build
   script:
     - dep ensure
-    - env GOOS=darwin GOARCH=amd64 go build -o ${CI_PROJECT_DIR}/${ARTIFACTS_DIR}/${BIN_NAME}_darwin -ldflags "-s -w" . 
+    - env GOOS=darwin GOARCH=amd64 go build -tags netgo -a -v -ldflags "-s -w" -o ${CI_PROJECT_DIR}/${ARTIFACTS_DIR}/${BIN_NAME}_darwin . 
   artifacts:
     paths:
       - ${ARTIFACTS_DIR}
@@ -49,7 +49,7 @@ build-rss-godler:windows:
   stage: build
   script:
     - dep ensure
-    - go build -o ${CI_PROJECT_DIR}/${ARTIFACTS_DIR}/${BIN_NAME}.exe -ldflags "-s -w" .
+    - env GOOS=windows GOARCH=amd64 go build -tags netgo -a -v -ldflags "-s -w" -o ${CI_PROJECT_DIR}/${ARTIFACTS_DIR}/${BIN_NAME}.exe .
   artifacts:
     paths:
       - ${ARTIFACTS_DIR}
