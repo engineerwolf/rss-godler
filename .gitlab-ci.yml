@@ -16,6 +16,7 @@ before_script:
   - go get -u github.com/golang/dep/cmd/dep
   - cp -r ${CI_PROJECT_DIR}/* ${GOPATH}/src/${GO_PROJECT}/
   - cd ${GOPATH}/src/${GO_PROJECT}
+  - export MAJOR_VERSION=$(shell git describe --always --long --dirty)
 
 test-rss-godler:
   stage: test
@@ -31,7 +32,7 @@ build-rss-godler:linux:
   stage: build
   script:
     - dep ensure
-    - env GOOS=linux GOARCH=amd64 go build -tags netgo -a -v -ldflags "-s -w" -o ${CI_PROJECT_DIR}/${ARTIFACTS_DIR}/${BIN_NAME} . 
+    - env GOOS=linux GOARCH=amd64 go build -tags netgo -a -v -ldflags "-s -w -X main.version=${MAJOR_VERSION}.${CI_PIPELINE_IID}" -o ${CI_PROJECT_DIR}/${ARTIFACTS_DIR}/${BIN_NAME} . 
   artifacts:
     paths:
       - ${ARTIFACTS_DIR}
@@ -40,7 +41,7 @@ build-rss-godler:osx:
   stage: build
   script:
     - dep ensure
-    - env GOOS=darwin GOARCH=amd64 go build -tags netgo -a -v -ldflags "-s -w" -o ${CI_PROJECT_DIR}/${ARTIFACTS_DIR}/${BIN_NAME}_darwin . 
+    - env GOOS=darwin GOARCH=amd64 go build -tags netgo -a -v -ldflags "-s -w -X main.version=${MAJOR_VERSION}.${CI_PIPELINE_IID}" -o ${CI_PROJECT_DIR}/${ARTIFACTS_DIR}/${BIN_NAME}_darwin . 
   artifacts:
     paths:
       - ${ARTIFACTS_DIR}
@@ -49,7 +50,7 @@ build-rss-godler:windows:
   stage: build
   script:
     - dep ensure
-    - env GOOS=windows GOARCH=amd64 go build -tags netgo -a -v -ldflags "-s -w" -o ${CI_PROJECT_DIR}/${ARTIFACTS_DIR}/${BIN_NAME}.exe .
+    - env GOOS=windows GOARCH=amd64 go build -tags netgo -a -v -ldflags "-s -w -X main.version=${MAJOR_VERSION}.${CI_PIPELINE_IID}" -o ${CI_PROJECT_DIR}/${ARTIFACTS_DIR}/${BIN_NAME}.exe .
   artifacts:
     paths:
       - ${ARTIFACTS_DIR}

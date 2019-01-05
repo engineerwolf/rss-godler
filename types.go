@@ -31,6 +31,7 @@ type commonConfig struct {
 type cmdOpts struct {
 	ConfigFile     string `short:"c" long:"conf" description:"configuration file path" default:"$HOME/.config/rss-godler"`
 	ValidateConfig bool   `long:"validate-config" description:"validate configuration file and exit."`
+	PrintVersion   bool   `short:"v" long:"version" group:"other" description:"Display version number"`
 }
 
 type feedTracker struct {

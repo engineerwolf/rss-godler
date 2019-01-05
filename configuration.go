@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"regexp"
 	"time"
 
@@ -13,13 +14,22 @@ import (
 
 var (
 	sizeRegEx = regexp.MustCompile("^(?P<value>[[:digit:]]+)(?P<unit>[B|K|M|G|T]?)$")
+	version   = "undefined"
 )
 
 func parseCmdOptions() (cmdOpts cmdOpts) {
 	_, err := flags.Parse(&cmdOpts)
 
 	if err != nil {
-		log.Fatalf(err.Error())
+		if _, ok := err.(*flags.Error); ok {
+			os.Exit(1)
+		} else {
+			log.Fatalf(err.Error())
+		}
+	}
+	if cmdOpts.PrintVersion {
+		fmt.Printf("rss-godler v.%s\n", version)
+		os.Exit(0)
 	}
 	return
 }
