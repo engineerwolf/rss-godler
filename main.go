@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"time"
 
 	"github.com/mmcdole/gofeed"
@@ -25,7 +26,7 @@ func main() {
 		os.Exit(0)
 	}
 	for {
-		downloadFeeds(config)
+		executeFeeds(config)
 		if !config.DeamonMode {
 			break
 		}
@@ -33,15 +34,15 @@ func main() {
 	}
 }
 
-func downloadFeeds(config config) {
+func executeFeeds(config config) {
 	for k, v := range config.Feeds {
 		log.Printf("Downloading feed %s", k)
 		populateDefaults(&v, config.commonConfig)
-		downloadFeed(k, &v)
+		processFeed(k, &v)
 	}
 }
 
-func downloadFeed(feedName string, feed *feed) {
+func processFeed(feedName string, feed *feed) {
 	fp := gofeed.NewParser()
 	feedInfo, err := fp.ParseURL(feed.URL)
 
@@ -58,6 +59,7 @@ func downloadFeed(feedName string, feed *feed) {
 			log.Printf("[%s] skipping %s already downloaded", feedName, v.Title)
 			continue
 		}
+		filename, url, err := extractAtom(*feed, *v)
 		err := downloadAtom(*feed, *v)
 		if os.IsExist(err) {
 			log.Printf("[%s] already present %s", feedName, v.Title)
@@ -71,12 +73,19 @@ func downloadFeed(feedName string, feed *feed) {
 	feed.lastUpdated = *lastFeed.PublishedParsed
 }
 
-func downloadAtom(feed feed, feedInfo gofeed.Item) error {
+func extractAtom(feed feed, feedInfo gofeed.Item) (string, string, error) {
 	url := feedInfo.GUID
 	filename, err := fileNameFromContentDisposition(url)
 	if err != nil {
 		filename = feedInfo.Title
 	}
+	if match, _ := regexp.MatchString(`\.(torrent|magnet)`, filename); !match {
+		filename := filename + ".torrent"
+	}
+}
+
+func downloadAtom(feed feed, feedInfo gofeed.Item) error {
+
 	resp, err := http.Get(url)
 	if err != nil {
 		return err
