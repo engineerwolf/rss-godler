@@ -2,15 +2,11 @@ package main
 
 import (
 	"fmt"
-	"io"
-	"log"
-	"mime"
-	"net/http"
 	"os"
-	"path/filepath"
 	"regexp"
 	"time"
 
+	log "github.com/golang/glog"
 	"github.com/mmcdole/gofeed"
 )
 
@@ -36,7 +32,7 @@ func main() {
 
 func executeFeeds(config config) {
 	for k, v := range config.Feeds {
-		log.Printf("Downloading feed %s", k)
+		log.Infof("Downloading feed %s", k)
 		populateDefaults(&v, config.commonConfig)
 		processFeed(k, &v)
 	}
@@ -47,79 +43,42 @@ func processFeed(feedName string, feed *feed) {
 	feedInfo, err := fp.ParseURL(feed.URL)
 
 	if err != nil {
-		log.Printf("[%s] could not retrive feed. due to error %s", feedName, err.Error())
+		log.Errorf("[%s] %s", feedName, err.Error())
 		return
 	}
 	if len(feedInfo.Items) == 0 {
-		log.Printf("[%s] no new items", feedName)
+		log.Infof("[%s] no new items", feedName)
 		return
 	}
 	for _, v := range feedInfo.Items {
 		if v.PublishedParsed.Before(feed.lastUpdated) {
-			log.Printf("[%s] skipping %s already downloaded", feedName, v.Title)
+			log.Infof("[%s] skipping %s already downloaded", feedName, v.Title)
 			continue
 		}
-		filename, url, err := extractAtom(*feed, *v)
-		err := downloadAtom(*feed, *v)
+		filename, url := extractAtom(*v)
+		err := DownloadFile(filename, url)
 		if os.IsExist(err) {
-			log.Printf("[%s] already present %s", feedName, v.Title)
+			log.Infof("[%s] already present %s", feedName, v.Title)
 		} else if err != nil {
-			log.Printf("[%s] failed to download %s. due to error %s", feedName, v.Title, err.Error())
+			log.Infof("[%s] failed to download %s. due to error %s", feedName, v.Title, err.Error())
 		} else {
-			log.Printf("[%s] downloaded %s", feedName, v.Title)
+			log.Infof("[%s] downloaded %s", feedName, v.Title)
 		}
 	}
 	lastFeed := feedInfo.Items[len(feedInfo.Items)-1]
 	feed.lastUpdated = *lastFeed.PublishedParsed
 }
 
-func extractAtom(feed feed, feedInfo gofeed.Item) (string, string, error) {
+func extractAtom(feedInfo gofeed.Item) (string, string) {
 	url := feedInfo.GUID
-	filename, err := fileNameFromContentDisposition(url)
+	filename, err := FileNameFromContentDisposition(url)
 	if err != nil {
 		filename = feedInfo.Title
 	}
 	if match, _ := regexp.MatchString(`\.(torrent|magnet)`, filename); !match {
-		filename := filename + ".torrent"
+		filename = filename + ".torrent"
 	}
-}
-
-func downloadAtom(feed feed, feedInfo gofeed.Item) error {
-
-	resp, err := http.Get(url)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	filePath := filepath.Join(os.ExpandEnv(feed.DownloadDir), filename)
-
-	out, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0666)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-	_, err = io.Copy(out, resp.Body)
-	if err != nil {
-		return err
-	}
-	// make request on link to mark as read
-	resp, _ = http.Get(feedInfo.Link)
-	resp.Body.Close()
-	return nil
-}
-
-func fileNameFromContentDisposition(url string) (string, error) {
-	resp, err := http.Head(url)
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
-	_, params, err := mime.ParseMediaType(resp.Header.Get("Content-Disposition"))
-	if err != nil {
-		return "", err
-	}
-	return params["filename"], nil
+	return filename, url
 }
 
 func populateDefaults(feed *feed, commonConfig commonConfig) {

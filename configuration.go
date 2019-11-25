@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"regexp"
 	"time"
 
+	log "github.com/golang/glog"
 	flags "github.com/jessevdk/go-flags"
 	yaml "gopkg.in/yaml.v2"
 )
