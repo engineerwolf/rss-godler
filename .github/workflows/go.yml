@@ -33,7 +33,6 @@ jobs:
         automatic_release_tag: "latest"
         draft: true
         prerelease: false
-        title: rss-godler
         files: |
           rss-godler
           rss-godler.exe
