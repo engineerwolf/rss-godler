@@ -34,6 +34,6 @@ jobs:
         draft: false
         prerelease: false
         files: |
-          rss-godler
-          rss-godler.exe
-          rss-godler_darwin
+          bin/rss-godler
+          bin/rss-godler.exe
+          bin/rss-godler_darwin
