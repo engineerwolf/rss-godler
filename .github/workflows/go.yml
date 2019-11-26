@@ -30,8 +30,8 @@ jobs:
       uses: marvinpinto/action-automatic-releases@v0.2.2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        automatic_release_tag: "latest"
-        draft: true
+        title: rss-godler ${{ github.ref }}
+        draft: false
         prerelease: false
         files: |
           rss-godler
