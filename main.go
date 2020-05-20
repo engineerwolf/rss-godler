@@ -75,7 +75,7 @@ func extractAtom(feedInfo gofeed.Item) (string, string) {
 	if err != nil {
 		filename = feedInfo.Title
 	}
-	if match, _ := regexp.MatchString(`\.(torrent|magnet)`, filename); !match {
+	if match, _ := regexp.MatchString(`\.(torrent|magnet)$`, filename); !match {
 		filename = filename + ".torrent"
 	}
 	return filename, url
